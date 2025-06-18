@@ -3,56 +3,72 @@
 
 skinparam linetype ortho
 
-title C4 Container Diagram for Insurance Hub
+title Container diagram for Insurance Hub System
 
-Person(agent, "Insurance Agent", "Manages policies, payments, and documents via the gateway.")
+' Actors
+Person(agent, "Insurance Agent", "Uses the system to sell insurance policies.")
 
-System_Boundary(insurance_hub, "Insurance Hub System") {
-    Container(agent_portal_gateway, "Agent Portal Gateway", "API Gateway", "Single entry point for all API requests. Routes to the appropriate downstream service.")
-    
-    Container(policy_service, "Policy Service", "Java/Micronaut", "Manages insurance offers and policies using CQRS. Publishes PolicyCreated events.")
-    Container(pricing_service, "Pricing Service", "Java/Micronaut", "Calculates insurance premiums based on MVEL business rules.")
-    Container(policy_search_service, "Policy Search Service", "Java/Micronaut", "Provides fast, full-text search over policies.")
-    Container(documents_service, "Documents Service", "Java/Micronaut/Kotlin", "Generates and stores PDF policy documents asynchronously.")
-    Container(payment_service, "Payment Service", "Java/Micronaut", "Manages policy accounts, payments, and bank statement imports.")
+System_Boundary(insurance_hub, "Insurance Hub") {
+    ' Frontend & Gateway
+    Container(spa, "Web Vue App", "Vue.js", "The single-page application providing the user interface.")
+    Container(gateway, "Agent Portal Gateway", "Micronaut", "The single entry point for all API requests from the frontend.")
 
-    Container(kafka, "Apache Kafka", "Message Broker", "Facilitates asynchronous, event-driven communication between services.")
-    
-    ContainerDb(policy_db, "Policy DB", "RDBMS/PostgreSQL", "Stores policy and offer aggregates.")
-    ContainerDb(payment_db, "Payment DB", "RDBMS/PostgreSQL", "Stores policy accounts, payments, and accounting entries.")
-    ContainerDb(elasticsearch, "Elasticsearch", "Search Engine", "Stores denormalized policy data for fast queries.")
-    ContainerDb(document_storage, "Document Storage", "File System / Blob Storage", "Stores generated PDF documents.")
-    ContainerDb(tariff_files, "Tariff Rule Files", "File System", "Stores MVEL business rules for the pricing service.")
-    ContainerDb(bank_statements_fs, "Bank Statements", "File System", "Stores CSV bank statements for import by the payment service.")
+    ' Core Microservices
+    Container(policy_service, "Policy Service", "Java/Micronaut", "Manages creation and lifecycle of insurance policies and offers.")
+    Container(product_service, "Product Service", "Java/Micronaut", "Manages the insurance product catalog, including covers and questions.")
+    Container(pricing_service, "Pricing Service", "Java/Micronaut", "Calculates prices for insurance products based on defined rules.")
+    Container(policy_search_service, "Policy Search Service", "Java/Micronaut", "Provides a denormalized, searchable view of policies.")
+    Container(payment_service, "Payment Service", "Java/Micronaut", "Handles policyholder accounts and processes payments.")
+    Container(documents_service, "Documents Service", "Kotlin/Micronaut", "Generates and manages policy-related documents (e.g., PDFs).")
+
+    ' Data Stores
+    ContainerDb(policy_db, "Policy Database", "RDBMS", "Stores policies and offers.")
+    ContainerDb(product_db, "Product Database", "MongoDB", "Stores the product catalog.")
+    ContainerDb(payment_db, "Payment Database", "PostgreSQL", "Stores policy accounts and payment transactions.")
+    ContainerDb(search_db, "Search Index", "Elasticsearch", "Stores a denormalized read model of policies for fast querying.")
 }
 
-System_Ext(jsreport_service, "JSReport Service", "External Service", "Renders HTML templates into PDF files.")
+' External Systems
+System_Ext(kafka, "Apache Kafka", "Event Streaming Platform", "Facilitates asynchronous communication between services.")
+System_Ext(jsreport, "JSReport Service", "External PDF Generator", "Renders HTML/data into a PDF document.")
+System_Ext(tariff_fs, "Tariff Rules Storage", "File System/MVEL", "Stores pricing rules as MVEL scripts.")
+System_Ext(bank_fs, "Bank Statements Storage", "File System/CSV", "Stores bank statements for payment processing.")
+System_Ext(docs_storage, "Document Storage", "File System/Blob", "Stores generated PDF documents.")
 
-' === User and Gateway Interactions ===
-Rel(agent, agent_portal_gateway, "Uses", "HTTPS")
 
-' === Gateway to Services (Synchronous) ===
-Rel(agent_portal_gateway, policy_service, "Routes policy requests", "HTTP/REST")
-Rel(agent_portal_gateway, policy_search_service, "Routes search requests", "HTTP/REST")
-Rel(agent_portal_gateway, documents_service, "Routes document download requests", "HTTP/REST")
-Rel(agent_portal_gateway, payment_service, "Routes payment management requests", "HTTP/REST")
+' Relationships
 
-' === Service to Service (Synchronous) ===
-Rel(policy_service, pricing_service, "Requests price calculations", "HTTP/REST")
-Rel(documents_service, jsreport_service, "Requests PDF generation", "HTTP/REST")
+' User Interaction Flow
+Rel(agent, spa, "Uses", "HTTPS")
+Rel(spa, gateway, "Makes API calls to", "HTTPS/JSON")
 
-' === Event-Driven Flows (Asynchronous) via Kafka ===
-Rel_Right(policy_service, kafka, "Publishes 'PolicyCreated' event")
-Rel(kafka, policy_search_service, "Delivers 'PolicyCreated' event")
-Rel(kafka, documents_service, "Delivers 'PolicyCreated' event")
-Rel(kafka, payment_service, "Delivers 'PolicyCreated' event")
+' Gateway to Services (Synchronous)
+Rel(gateway, policy_service, "Routes requests to", "HTTPS")
+Rel(gateway, product_service, "Routes requests to", "HTTPS")
+Rel(gateway, policy_search_service, "Routes requests to", "HTTPS")
+Rel(gateway, payment_service, "Routes requests to", "HTTPS")
+Rel(gateway, documents_service, "Routes requests to", "HTTPS")
 
-' === Service to Data Store Interactions ===
-Rel(policy_service, policy_db, "Reads/Writes", "JDBC/JPA")
-Rel(pricing_service, tariff_files, "Loads rules from", "File I/O")
-Rel(policy_search_service, elasticsearch, "Indexes and Queries", "Elasticsearch API")
-Rel(documents_service, document_storage, "Stores/Retrieves", "File I/O")
-Rel(payment_service, payment_db, "Reads/Writes", "JDBC/JPA")
-Rel(payment_service, bank_statements_fs, "Imports CSVs from", "File I/O")
+' Inter-Service Communication (Synchronous)
+Rel(policy_service, pricing_service, "Requests price calculation from", "HTTPS/REST")
+Rel(policy_service, product_service, "Fetches product details from", "HTTPS/REST")
+
+' Asynchronous Event Flow via Kafka
+Rel(policy_service, kafka, "Publishes 'PolicyCreated' event")
+Rel(kafka, policy_search_service, "Consumes 'PolicyCreated' event")
+Rel(kafka, payment_service, "Consumes 'PolicyCreated' event")
+Rel(kafka, documents_service, "Consumes 'PolicyCreated' event")
+
+' Database Relationships
+Rel(policy_service, policy_db, "Reads from and writes to", "JDBC")
+Rel(product_service, product_db, "Reads from and writes to", "Mongo Reactive Streams")
+Rel(payment_service, payment_db, "Reads from and writes to", "JPA")
+Rel(policy_search_service, search_db, "Reads from and writes to", "REST API")
+
+' External Service and Storage Relationships
+Rel(pricing_service, tariff_fs, "Loads tariff rules from", "File I/O")
+Rel(documents_service, jsreport, "Requests PDF generation from", "HTTPS/REST")
+Rel(documents_service, docs_storage, "Stores and retrieves PDFs from", "File I/O")
+Rel(payment_service, bank_fs, "Imports bank statements from", "File I/O")
 
 @enduml

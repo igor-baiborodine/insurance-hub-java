@@ -1,40 +1,54 @@
 ### Explanation of Containers and Flows
-This document describes the containers within the **Insurance Hub** system and the primary flows of information between them. The architecture is designed as a set of collaborating microservices that communicate both synchronously via REST APIs and asynchronously via an event bus.
-#### 1. Systems & Actors External to the Hub
-- **Insurance Agent (Person)**: The primary user of the system who interacts with the various services through a unified user interface that communicates with the **Agent Portal Gateway**.
-- **JSReport Service**: A third-party, external system responsible for rendering HTML templates into PDF documents. It is used exclusively by the **Documents Service**.
 
-#### 2. Containers within the Insurance Hub System
-- **Agent Portal Gateway**:
-    - **Role**: The single, unified entry point for all synchronous API calls originating from the client-side user interface.
-    - **Function**: It handles cross-cutting concerns like authentication and routes incoming HTTP requests to the appropriate downstream microservice (, , , or ). `policy-service``policy-search-service``documents-service``payment-service`
+This document explains the containers and data flows shown in the C4 Container Diagram for the Insurance Hub system.
 
-- **Policy Service**:
-    - **Role**: The core service responsible for the business logic of creating and managing insurance offers and policies.
-    - **Function**: It implements a CQRS pattern, separating write-operations (creating offers, converting them to policies) from read-operations. It synchronously calls the **Pricing Service** to get price calculations. Upon successful creation of a policy, it publishes a `PolicyCreated` event to **Apache Kafka**.
+#### Containers (Internal Systems)
 
-- **Pricing Service**:
-    - **Role**: A specialized service that provides on-demand price calculations for insurance products.
-    - **Function**: It exposes a synchronous REST API used by the **Policy Service**. It calculates prices by executing complex business rules (tariffs) which are loaded from MVEL files stored on the **Tariff Rule Files** file system.
+*   **Web Vue App**: The frontend single-page application (SPA) built with Vue.js. It provides the user interface for the Insurance Agent to manage and sell insurance policies.
+*   **Agent Portal Gateway**: A Micronaut-based API Gateway that acts as the single entry point for all requests from the frontend. It routes traffic to the appropriate downstream microservices.
+*   **Policy Service**: The core service responsible for the business logic of creating and managing insurance offers and policies. It acts as a central orchestrator for many business processes.
+*   **Product Service**: Manages the complete insurance product catalog. It provides information about available products, their coverage options, and the questions required to generate an offer.
+*   **Pricing Service**: Calculates the price for an insurance product based on a set of rules (tariffs) and the data provided in an offer.
+*   **Policy Search Service**: Provides a powerful search capability over all policies. It maintains a denormalized read model of policy data to enable fast and complex queries.
+*   **Payment Service**: Handles all financial aspects, including managing policyholder accounts, processing payments, and reconciling bank statements.
+*   **Documents Service**: Responsible for generating, storing, and providing access to policy-related documents, such as the final policy PDF.
+*   **Databases**: Each core service that owns data has its own dedicated database, following the database-per-service pattern.
+    *   **Policy Database (RDBMS)**: Stores offers and policies for the `Policy Service`.
+    *   **Product Database (MongoDB)**: Stores the product catalog for the `Product Service`.
+    *   **Payment Database (PostgreSQL)**: Stores accounts and transactions for the `Payment Service`.
+    *   **Search Index (Elasticsearch)**: Stores the denormalized policy data for the `Policy Search Service`.
 
-- **Policy Search Service**:
-    - **Role**: Provides an optimized, fast full-text search capability over all policies.
-    - **Function**: It asynchronously listens for `PolicyCreated` events on the **Apache Kafka** bus. When an event is received, it transforms the policy data into a denormalized read model and indexes it in **Elasticsearch**. It also exposes its own REST API for handling search queries from the gateway.
+#### External Systems & Services
 
-- **Documents Service**:
-    - **Role**: Manages the asynchronous generation and lifecycle of policy documents (PDFs).
-    - **Function**: It is triggered by `PolicyCreated` events from **Apache Kafka**. Upon receiving an event, it orchestrates the generation of a PDF by calling the external **JSReport Service**. The final document is then saved to the **Document Storage** and can be retrieved later via this service's API.
+*   **Insurance Agent (Person)**: The end-user of the system who interacts with the Web Vue App.
+*   **Apache Kafka**: An event streaming platform used as a message broker for asynchronous communication, decoupling the services.
+*   **JSReport Service**: An external service used by the `Documents Service` to generate PDF documents from templates and data.
+*   **File System / Storage**: Several services interact with storage systems for specific files:
+    *   **Tariff Rules Storage**: Stores MVEL rule scripts used by the `Pricing Service`.
+    *   **Bank Statements Storage**: Stores CSV bank statements that are imported by the `Payment Service`.
+    *   **Document Storage**: Stores the generated PDF documents managed by the `Documents Service`.
 
-- **Payment Service**:
-    - **Role**: Manages all financial aspects of a policy, including its account, balance, and payments.
-    - **Function**: It listens for `PolicyCreated` events to automatically create a new financial account for the policy in the **Payment DB**. It also has a scheduled process for importing and reconciling payments from CSV files found in the **Bank Statements** file system.
+#### Flows
 
-- **Apache Kafka**:
-    - **Role**: The central event bus for the entire system.
-    - **Function**: It facilitates the event-driven architecture by decoupling services. The **Policy Service** publishes events, and multiple other services subscribe to these events to perform their work asynchronously and independently.
+1.  **User Interaction Flow**:
+    *   The `Insurance Agent` uses the `Web Vue App`.
+    *   The `Web Vue App` communicates with the backend by sending requests to the `Agent Portal Gateway`.
 
-- **Data Stores (Policy DB, Payment DB, Elasticsearch, etc.)**:
-    - **Role**: A set of dedicated, persistent storage containers.
-    - **Function**: Each service owns and manages its own database, following the database-per-service pattern. This includes relational databases for transactional data, a search engine for query optimization, and various file system mounts for storing files like PDFs, pricing rules, and bank statements.
+2.  **Synchronous API Flow (Policy Creation)**:
+    *   The `Gateway` routes a request to create an offer to the `Policy Service`.
+    *   The `Policy Service` calls the `Product Service` to get details about the selected insurance product.
+    *   The `Policy Service` then calls the `Pricing Service` with the offer data to get a price calculation.
+    *   The `Pricing Service` reads tariff rules from its `Tariff Rules Storage` to perform the calculation.
+    *   Once the offer is converted to a policy, the `Policy Service` saves the final policy to its `Policy Database`.
 
+3.  **Asynchronous Event Flow (Policy Finalized)**:
+    *   When a policy is created and saved, the `Policy Service` publishes a `PolicyCreated` event to an `Apache Kafka` topic.
+    *   This event is consumed independently by several other services:
+        *   The `Policy Search Service` consumes the event, transforms the data into a read model, and saves it to its `Search Index`.
+        *   The `Payment Service` consumes the event and creates a new policy account in its `Payment Database`.
+        *   The `Documents Service` consumes the event, orchestrates the generation of a policy PDF by calling the `JSReport Service`, and saves the result to `Document Storage`.
 
+4.  **Other Flows**:
+    *   **Search Flow**: A search query from the `Web Vue App` goes through the `Gateway` to the `Policy Search Service`, which queries its `Search Index` and returns the results.
+    *   **Payment Flow**: The `Payment Service` periodically reads CSV bank statements from `Bank Statements Storage` to reconcile payments.
+    *   **Document Download**: The user can request to download a document via the `Web Vue App`. The request goes through the `Gateway` to the `Documents Service`, which retrieves the file from `Document Storage`.
