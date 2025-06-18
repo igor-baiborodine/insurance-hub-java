@@ -1,0 +1,58 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+skinparam linetype ortho
+
+title C4 Container Diagram for Insurance Hub
+
+Person(agent, "Insurance Agent", "Manages policies, payments, and documents via the gateway.")
+
+System_Boundary(insurance_hub, "Insurance Hub System") {
+    Container(agent_portal_gateway, "Agent Portal Gateway", "API Gateway", "Single entry point for all API requests. Routes to the appropriate downstream service.")
+    
+    Container(policy_service, "Policy Service", "Java/Micronaut", "Manages insurance offers and policies using CQRS. Publishes PolicyCreated events.")
+    Container(pricing_service, "Pricing Service", "Java/Micronaut", "Calculates insurance premiums based on MVEL business rules.")
+    Container(policy_search_service, "Policy Search Service", "Java/Micronaut", "Provides fast, full-text search over policies.")
+    Container(documents_service, "Documents Service", "Java/Micronaut/Kotlin", "Generates and stores PDF policy documents asynchronously.")
+    Container(payment_service, "Payment Service", "Java/Micronaut", "Manages policy accounts, payments, and bank statement imports.")
+
+    Container(kafka, "Apache Kafka", "Message Broker", "Facilitates asynchronous, event-driven communication between services.")
+    
+    ContainerDb(policy_db, "Policy DB", "RDBMS/PostgreSQL", "Stores policy and offer aggregates.")
+    ContainerDb(payment_db, "Payment DB", "RDBMS/PostgreSQL", "Stores policy accounts, payments, and accounting entries.")
+    ContainerDb(elasticsearch, "Elasticsearch", "Search Engine", "Stores denormalized policy data for fast queries.")
+    ContainerDb(document_storage, "Document Storage", "File System / Blob Storage", "Stores generated PDF documents.")
+    ContainerDb(tariff_files, "Tariff Rule Files", "File System", "Stores MVEL business rules for the pricing service.")
+    ContainerDb(bank_statements_fs, "Bank Statements", "File System", "Stores CSV bank statements for import by the payment service.")
+}
+
+System_Ext(jsreport_service, "JSReport Service", "External Service", "Renders HTML templates into PDF files.")
+
+' === User and Gateway Interactions ===
+Rel(agent, agent_portal_gateway, "Uses", "HTTPS")
+
+' === Gateway to Services (Synchronous) ===
+Rel(agent_portal_gateway, policy_service, "Routes policy requests", "HTTP/REST")
+Rel(agent_portal_gateway, policy_search_service, "Routes search requests", "HTTP/REST")
+Rel(agent_portal_gateway, documents_service, "Routes document download requests", "HTTP/REST")
+Rel(agent_portal_gateway, payment_service, "Routes payment management requests", "HTTP/REST")
+
+' === Service to Service (Synchronous) ===
+Rel(policy_service, pricing_service, "Requests price calculations", "HTTP/REST")
+Rel(documents_service, jsreport_service, "Requests PDF generation", "HTTP/REST")
+
+' === Event-Driven Flows (Asynchronous) via Kafka ===
+Rel_Right(policy_service, kafka, "Publishes 'PolicyCreated' event")
+Rel(kafka, policy_search_service, "Delivers 'PolicyCreated' event")
+Rel(kafka, documents_service, "Delivers 'PolicyCreated' event")
+Rel(kafka, payment_service, "Delivers 'PolicyCreated' event")
+
+' === Service to Data Store Interactions ===
+Rel(policy_service, policy_db, "Reads/Writes", "JDBC/JPA")
+Rel(pricing_service, tariff_files, "Loads rules from", "File I/O")
+Rel(policy_search_service, elasticsearch, "Indexes and Queries", "Elasticsearch API")
+Rel(documents_service, document_storage, "Stores/Retrieves", "File I/O")
+Rel(payment_service, payment_db, "Reads/Writes", "JDBC/JPA")
+Rel(payment_service, bank_statements_fs, "Imports CSVs from", "File I/O")
+
+@enduml
