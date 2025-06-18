@@ -1,5 +1,5 @@
-## Phase 1: High-Level Architecture AnalysisBased on the README file and project structure, here's my recommended systematic approach to understand the insurance-hub-java project before starting your Go implementation:
-## Phase 1: Architecture Understanding (1-2 days)
+## Phase 1: Architecture Understanding
+
 ### 1. **Study the Business Domain Model**
 From the README, identify the core business entities:
 - **Insurance Policies** - The main product being sold
@@ -40,10 +40,12 @@ Based on the microservices structure, the bounded contexts are:
 │ - Charts        │    │ - Messaging     │    │ - Security      │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
-## Phase 2: Communication Patterns Analysis (1-2 days)
+
+## Phase 2: Communication Patterns Analysis
+
 ### 1. **Synchronous Communication (HTTP/REST)**
 - → All services (API Gateway pattern) **agent-portal-gateway**
-- → (price calculations) **policy-service****pricing-service**
+- → (price calculations) **policy-service** **pricing-service**
 - **Frontend** → (single entry point) **agent-portal-gateway**
 
 ### 2. **Asynchronous Communication (Kafka Events)**
@@ -58,7 +60,8 @@ payment-service → PaymentReceived Event → (other interested services)
 ### 3. **Real-time Communication (WebSockets)**
 - ↔ **Frontend** (agent chat system) **chat-service**
 
-## Phase 3: Data Flow & Integration Patterns (1 day)
+## Phase 3: Data Flow & Integration Patterns
+
 ### 1. **CQRS Implementation**
 demonstrates: **policy-service**
 - **Command Side**: Create/update policies
@@ -76,7 +79,8 @@ provides: **agent-portal-gateway**
 - Request routing to appropriate services
 - Cross-cutting concerns (auth, logging, etc.)
 
-## Phase 4: Technology Stack Mapping (1 day)
+## Phase 4: Technology Stack Mapping
+
 ### Current Java Stack → Go Equivalent
 
 | Java/Micronaut | Go Alternative | Purpose |
@@ -124,10 +128,11 @@ Follow this example flow:
 
 ## Output Deliverables
 Create these artifacts before coding:
-1. **Service Dependency Diagram**
-2. **Event Flow Documentation**
+1. **Service Dependency Diagram**: 
+    - [Component C4 diagrams](/docs/c4-diagrams/component)
+    - [System context C4 diagram](/docs/c4-diagrams/context)
+    - [System container C4 diagram](/docs/c4-diagrams/container)
+2. **Business Flows Documentation**: [Diagrams](/docs/business-flows) 
 3. **API Contract Specifications**
 4. **Database Schema Mapping**
 5. **Go Project Structure Plan**
-
-This systematic approach will give you a solid foundation for your Go implementation, ensuring you understand not just the "what" but also the "why" behind each architectural decision.
