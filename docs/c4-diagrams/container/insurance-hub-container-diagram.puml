@@ -6,7 +6,7 @@ skinparam linetype ortho
 title Container diagram for Insurance Hub System
 
 ' Actors
-Person(agent, "Insurance Agent", "Uses the system to sell insurance policies.")
+Person(agent, "Insurance Agent", "Uses the system to sell insurance policies and view analytics.")
 
 System_Boundary(insurance_hub, "Insurance Hub") {
     ' Frontend & Gateway
@@ -14,18 +14,22 @@ System_Boundary(insurance_hub, "Insurance Hub") {
     Container(gateway, "Agent Portal Gateway", "Micronaut", "The single entry point for all API requests from the frontend.")
 
     ' Core Microservices
+    Container(auth_service, "Auth Service", "Java/Micronaut", "Handles user authentication and JWT token generation.")
     Container(policy_service, "Policy Service", "Java/Micronaut", "Manages creation and lifecycle of insurance policies and offers.")
-    Container(product_service, "Product Service", "Java/Micronaut", "Manages the insurance product catalog, including covers and questions.")
+    Container(product_service, "Product Service", "Java/Micronaut", "Manages the insurance product catalog.")
     Container(pricing_service, "Pricing Service", "Java/Micronaut", "Calculates prices for insurance products based on defined rules.")
     Container(policy_search_service, "Policy Search Service", "Java/Micronaut", "Provides a denormalized, searchable view of policies.")
     Container(payment_service, "Payment Service", "Java/Micronaut", "Handles policyholder accounts and processes payments.")
     Container(documents_service, "Documents Service", "Kotlin/Micronaut", "Generates and manages policy-related documents (e.g., PDFs).")
+    Container(dashboard_service, "Dashboard Service", "Java/Micronaut", "Provides sales analytics and visualizations.")
+    Container(chat_service, "Chat Service", "Java/Micronaut", "Provides real-time chat functionality for agents via WebSockets.")
+
 
     ' Data Stores
     ContainerDb(policy_db, "Policy Database", "RDBMS", "Stores policies and offers.")
     ContainerDb(product_db, "Product Database", "MongoDB", "Stores the product catalog.")
     ContainerDb(payment_db, "Payment Database", "PostgreSQL", "Stores policy accounts and payment transactions.")
-    ContainerDb(search_db, "Search Index", "Elasticsearch", "Stores a denormalized read model of policies for fast querying.")
+    ContainerDb(search_db, "Search & Analytics DB", "Elasticsearch", "Stores denormalized data for policy search and sales analytics.")
 }
 
 ' External Systems
@@ -40,14 +44,18 @@ System_Ext(docs_storage, "Document Storage", "File System/Blob", "Stores generat
 
 ' User Interaction Flow
 Rel(agent, spa, "Uses", "HTTPS")
-Rel(spa, gateway, "Makes API calls to", "HTTPS/JSON")
+Rel(spa, gateway, "Makes API calls to", "HTTPS/JSON & WebSocket")
 
 ' Gateway to Services (Synchronous)
+Rel(gateway, auth_service, "Validates tokens with", "HTTPS")
 Rel(gateway, policy_service, "Routes requests to", "HTTPS")
 Rel(gateway, product_service, "Routes requests to", "HTTPS")
 Rel(gateway, policy_search_service, "Routes requests to", "HTTPS")
 Rel(gateway, payment_service, "Routes requests to", "HTTPS")
 Rel(gateway, documents_service, "Routes requests to", "HTTPS")
+Rel(gateway, dashboard_service, "Routes requests to", "HTTPS")
+Rel(gateway, chat_service, "Proxies connection to", "WebSocket")
+
 
 ' Inter-Service Communication (Synchronous)
 Rel(policy_service, pricing_service, "Requests price calculation from", "HTTPS/REST")
@@ -58,12 +66,14 @@ Rel(policy_service, kafka, "Publishes 'PolicyCreated' event")
 Rel(kafka, policy_search_service, "Consumes 'PolicyCreated' event")
 Rel(kafka, payment_service, "Consumes 'PolicyCreated' event")
 Rel(kafka, documents_service, "Consumes 'PolicyCreated' event")
+Rel(kafka, dashboard_service, "Consumes 'PolicyCreated' event")
 
 ' Database Relationships
 Rel(policy_service, policy_db, "Reads from and writes to", "JDBC")
 Rel(product_service, product_db, "Reads from and writes to", "Mongo Reactive Streams")
 Rel(payment_service, payment_db, "Reads from and writes to", "JPA")
 Rel(policy_search_service, search_db, "Reads from and writes to", "REST API")
+Rel(dashboard_service, search_db, "Reads from and writes to", "REST API")
 
 ' External Service and Storage Relationships
 Rel(pricing_service, tariff_fs, "Loads tariff rules from", "File I/O")
