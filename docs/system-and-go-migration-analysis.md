@@ -1,3 +1,68 @@
+## Insurance Hub System & Go Migration Analysis
+
+### System Context
+
+* [Diagram source PlantUML](/docs/c4-diagrams/context/insurance-hub-system-context-diagram.puml)
+* [Generated diagram on www.plantuml.com](https://www.plantuml.com/plantuml/uml/ZPDFSzis4CNl_1HRdzoPsBhqr5CIHwdTsbEDfEIgWS2bY0f_sDsb77txOa69aLcbqni9BDxxOV7sFOiXwOElVdBH-hv6Q4Kw_dKs8_DwltFIzjkUaMoAWb7kRGgppfkeP-vOQk-siuTVxXQwzENbUHOC2r9UsZpeYMzotwbwnNiNEqCcW7SHvTWX998sLPKuyGYh8mi6E1s2sfcT5ZU9u2boJoPQXCT-MrKB94xnrkmopZku-RxxGLTkyj87K6983KYBuCO2DXuPkknhFBos2IoX4MGmiOPWOfRKRU-iGxw_-Rcg1ghRKMAJkt7fgKI3Ot2M4YCTd4M-snh66hYSrZiCwYxk2b7JUm_UDMYFrgDoZWQZ_JjeA0NukqzIZYNep35Wb09R9zkNdtnb92CknGlUpVoRtFx5X7hLJFVxQba-OJNmAN4kGOh6m-BJP_XjL85vp9YbOecnHc9uNByy3wP6J2QLf6T616tKfU_UD7kZBUcCRH7-qDzYU53UbH2Qe3VAYP4cKT2z1QM3g_KX822psI5iAUsHIkyC7wDjASNKCzWKGX-T7MYtAA-84SwDdx1iJTnl6iuE7_DNDZU2XJb_9iesQlxPZV6RFQo-3i_9mpxuT79I41UqYmglmi1dEMYo16l9-4WTfOp3kNQ298PSqmnGw_8DozxZ3ubUliwV_mD9ju4jkKuOf3K2DJOkOWPmLab9nISCTRAyESbbwK_dCFq0uQDFfv1tIEnOjFOQpJcDM6j2XYWVtmQbgfRepxCx7QilZ7g9oQ3AUKulnlJAm2ZXutgzM6KNzPY8Nup3AUt8_oA4NbziL9ejvwlrTRbpoXVzrZjkaGkSJP6p4cV5O5m4F1JLQOWlqd5T_NjkdqhaU1AujraZpBxMULSUOdoz9Phwklnb1hMAtwQbTDnustjjUceQf5A0_3-q9zdII9sQGoZay80yYSdO_L7zQVQdHkKznheF_Xy0)
+* [Explanation of system context and flows](/docs/c4-diagrams/context/insurance-hub-system-context-analysis.md)
+
+#### Migration Notes
+
+* None
+
+### System Containers
+
+* [Diagram source PlantUML](/docs/c4-diagrams/container/insurance-hub-container-diagram.puml)
+* [Generated diagram on www.plantuml.com](https://www.plantuml.com/plantuml/uml/dLT1LoCv3hxdLsWvDFHx3RdiQKy30QPXcfriGZD7dk9I4WykkzPoGMVtxNzVo-KgAaN1qDnIjgNli_HPKdxXW3xKfPdyJLjbwe9W6qB5_vXEFJwTR7JOrgkQoIjd0zbmebmvhGnQiJdcK1Yzcix-VZoNfUyttwObSY0Vb-vdqGAr9NzIYVy9FsXReSSIJ5mDkuh0-R1raqdGmH1qvw7Gk95pQ-VXodBjqIg2h_KAbZiEL4ucXt2gWlCycPDdPuzmGpPyWOFdqwUoSX2NlZCnX2q19ri83fYC0TqThPpHIXC3sW8UDJt57sXsGIi-EVWycJIWzsUkjWNwtL5dUHzZqu5cYWUVuRyJ0813kFGfPWLyWbynq1FkqaPtpoEkC9h_GIkugoFZgXA-yUV9doo_ReMqjXj3nnLk2B2g8b4Csbcel7lKHTnCLvC4WOvWVesA8ka1qAQ1ZpvJM63kV43JiXAi6wqYMwp3FZ2G3Nu7bOlEKphG63YTNu6dVzV4WM7jNPauhFDj1Jq7OEOyGVBCv1-r8XxmYdZR-xmdvE8dB9jFuN6DZpZTO_OLRM68cmkBDTcGGvAoT_t7BGJtG1Os507Inijmf8JlUi3pjF0sz0rQt123ylICP_IQr4uP0hT-JL5klIRF8ooyAseL-ZIQbVVn25lg8sPJXG6DsuoXHKPsqqThLjv6cw5HjS503EA1M5Jm4fTXXKm5E0i5hIDW0Rusn6_47htQZgL0rj_cD4_Qb-X6CEjyYKR_Xuelq3Z5bQ7c6RjrpiGe4ToLPFV2twoyJu7DFRRE5A94fLnjGygtX4GHCp5aY17mmgawRVNWpzkrFe7VN33QxbFujP5sbbSfUkW87NkIR1NG8S0HdMnEli3y_98_Zp11tguS-gBFf5rxPnuO3N5NDDiwohNa9RsLaGZ4FFLZFukVxqJpXEOuw990VC2wjaem8bZO9NMcPi2H0KAihKkd7gZ9GLkNpZ4WB8Fpmu9qlchrMQmwJQRZ8czXiJW_krdAZyRyFIzTlEPdajqs7tj-RvpTkFEpdkUmVVjLPyzPOzbp-jZtF7SSDfwM__esfBqRw3OR1u-MCSLqz2xvwIR0_5m_mMcN_EOI5mPPFjD-3xZ_OA70W2bZcKvpMiWC9IKy_YTj_-9781zNyoJ0RNEEwqSFk7v0QICLgYt1R_APk3ocLnqyOIa5RsumHDHIzYvHQQD3yvfuPzNME-jg1kNAihPjRrbHU2Aoa0KhVFh8VxAdolaWmbqkqi--c5lIyWOXlrxdavp85kGPljx6qIc5GzlW0ELazuG7O06zNg_lrooTEls6XTJQf6ZSKBgMDfH3DBsvkzXBVIxxFjaWW-m3Aw-hCBpN2kr30tGMVqK032ICNiMQBUzwK68Et1b9gZkLvIePcGmm2wVudfFxVbLy3V7Ck5KFChTzAleHR5__8Ip8D0LfgokMXUzCCcC6yetYuTAufqayrewKN64U8bFrlxsTBwClEP1sdYUh6tmWJhEHGcCOWkiCfjVBt_y9dvwhaR0vRCSl2AuL2yFHybc33Ko7C1YMxj3eGdJR33mCJpfiXnmxunSZpyBLOjlDSS6zRfkBryUCX_t-vrraoNpCk9F01ysxzlWXyq6NctltGvCK5sifwIqRTyh8EasAFCwgW5c_5er8P9ZSbxFU8dDDMmGgJtNYJWRuPwKkBfQt1sDUnsHmIK5jYTiTA2YWDZpkKlwpzGjiKvNbkKcdRghrA6vRrkVrocWMlCEcCSyyoKi_119NcNK-_PhiPivoNRxJHzRTnwmxuNtKlbFUJzXF3hlUFwXrendjpJeBmgB9NEg_Jru7QgLzVNuso-HUY20llEsact0YAQcpZvJRCRTkXw7E2-_WDZzjVOodF7__fIEHgPJlxAqV_WzxsfzO6ZzoFZUpqHmDtsw_tNzp4JMlv0Ok5BgUU3NzFTCVKLzlIEdAWJJ9t3BVg0MZxWPzElTVkPodu3KzKd8_nd0yvS_3nbKfF8VpmwYdoIzaYxeq_mS0)
+* [Explanation of system context and flows](/docs/c4-diagrams/container/insurance-hub-container-analysis.md)
+
+#### Migration Notes
+* Internal systems
+  TODO
+* External systems
+   
+   | External system          | Java        | Go        |
+   |--------------------------|-------------|-----------|
+   | Event streaming platform | Kafka       | Kafka     |
+   | Bank statements storage  | File system | MinIO     |
+   | Documents storage        | File system | MinIO     |
+   | Tariff rules storage     | File system | Tarantool |
+   | PDF reports generator    | JSReports   | TODO      |
+
+<details>
+<summary>Reasoning for using Tarantool for tariff rule scripts storage and execution</summary>
+
+1. **Extreme Performance:** This is the most significant benefit. Tarantool is an in-memory database
+   and application server. By rewriting your pricing rules in Lua and executing them as stored
+   procedures, the calculations would occur at in-memory speeds, right next to the data. This will
+   almost certainly be drastically faster than the current architecture's chain of
+   `HTTP Request -> Service Logic -> File I/O -> Script Interpretation`.
+2. **Superior Decoupling:** The pricing logic becomes a self-contained, language-agnostic component
+   within Tarantool. Your new in Go becomes incredibly simple: its only job is to receive a request,
+   call the appropriate Lua function in Tarantool with the necessary parameters, and return the
+   result. You could update your pricing rules dynamically without ever redeploying the Go
+   microservice. `pricing-service`
+3. **Centralized and Atomic Logic:** Managing business rules in a database is far more robust than
+   managing script files. With Tarantool, you can update pricing rules transactionally, ensuring
+   that your system is never in an inconsistent state. It creates a single source of truth for
+   pricing.
+4. **Future-Proofing:** By moving the logic into Tarantool, you make it accessible to _any_ service,
+   regardless of the programming language. If you later add a new microservice in Python or Rust
+   that needs to calculate a price, it can call the exact same Lua procedure in Tarantool that your
+   Go service uses.
+
+</details>
+
+* Interservice communication - TODO
+
+### System Container Components
+
+TODO
+
+#### Migration Notes
+
+
+
 ## Phase 1: Architecture Understanding
 
 ### 1. **Study the Business Domain Model**
