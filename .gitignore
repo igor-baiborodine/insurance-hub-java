@@ -42,3 +42,5 @@
 
 # Micronaut
 **/dependency-reduced-pom.xml
+
+**/research/*
